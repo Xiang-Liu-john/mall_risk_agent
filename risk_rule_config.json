@@ -1,0 +1,58 @@
+{
+  "rule_version": "2026Q3-baseline",
+  "status": "baseline_pending_historical_calibration",
+  "minimum_history_months": 12,
+  "why_12_months": "A 12-month window covers seasonality, holiday campaigns, quarterly events, and year-over-year comparison. Six months can detect short-term deterioration, but is not stable enough for calibrated mall operation risk thresholds.",
+  "score_adjustment_policy": {
+    "llm_can_adjust_score": true,
+    "max_delta_per_run": 10,
+    "requires_evidence_ids": true,
+    "requires_verifier_pass": true,
+    "requires_human_review_when_final_level_changes": true
+  },
+  "rules": [
+    {
+      "id": "arrears_amount",
+      "owner": "finance_risk",
+      "baseline_thresholds": [
+        {"condition": "> 0", "score": 6},
+        {"condition": ">= 10000", "score": 14},
+        {"condition": ">= 50000", "score": 22}
+      ],
+      "future_dynamic_threshold": "By category and rent band: P75/P90 of trailing 12-month arrears amount, adjusted by monthly rent multiple and deposit coverage.",
+      "calibration_data": ["monthly_arrears_amount", "arrears_days", "monthly_rent", "deposit_coverage", "legal_collection_outcome"]
+    },
+    {
+      "id": "rent_to_sales_ratio",
+      "owner": "leasing_operation",
+      "baseline_thresholds": [
+        {"condition": ">= 18%", "score": 4},
+        {"condition": "> 25%", "score": 7},
+        {"condition": "> 35%", "score": 10}
+      ],
+      "future_dynamic_threshold": "By category/floor/area band: P75/P90 of trailing 12-month rent-to-sales ratio and gross-margin adjusted benchmark.",
+      "calibration_data": ["monthly_sales", "monthly_rent", "category", "floor", "store_area", "gross_margin_band"]
+    },
+    {
+      "id": "sales_mom_decline",
+      "owner": "operation",
+      "baseline_thresholds": [
+        {"condition": "<= -10%", "score": 8},
+        {"condition": "<= -20%", "score": 16},
+        {"condition": "<= -30%", "score": 20}
+      ],
+      "future_dynamic_threshold": "Use rolling 3-month and 6-month trend, category benchmark, and year-over-year seasonality instead of single-month decline.",
+      "calibration_data": ["monthly_sales", "sales_mom", "sales_yoy", "category_benchmark", "campaign_calendar"]
+    },
+    {
+      "id": "utility_drop",
+      "owner": "operation",
+      "baseline_thresholds": [
+        {"condition": "<= -20%", "score": 7},
+        {"condition": "<= -40%", "score": 12}
+      ],
+      "future_dynamic_threshold": "Compare trailing utility usage against store's own seasonal baseline and same-category peers to detect shortened operation or closure preparation.",
+      "calibration_data": ["utility_cost", "opening_days", "opening_hours", "inspection_records", "closure_outcome"]
+    }
+  ]
+}

@@ -6,12 +6,16 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from risk_rules import threshold_score
+
 
 SEED = 20260718
 random.seed(SEED)
 np.random.seed(SEED)
 
 OUTPUT_CSV = Path(__file__).parent / "data" / "购物中心100家门店经营数据_优化命名.csv"
+OUTPUT_HISTORY_CSV = Path(__file__).parent / "data" / "门店经营月度历史数据_12个月.csv"
+HISTORY_MONTHS = pd.period_range("2025-08", "2026-07", freq="M")
 
 CATEGORY_COUNTS = {
     "精品零售": 30,
@@ -341,16 +345,17 @@ def score_row(row: pd.Series) -> tuple[int, str]:
     contract = 0
 
     mom = row["销售环比(%)"]
-    if mom <= -30:
-        business += 20
-    elif mom <= -20:
-        business += 16
-    elif mom <= -10:
-        business += 8
+    business += threshold_score("sales_mom_decline", float(mom))
     if row["进店率(%)"] < 5:
         business += 6
     if row["成交转化率(%)"] < 8:
         business += 6
+    consecutive_declines = float(row.get("连续下滑月数", 0))
+    recent_mom_avg = float(row.get("近3月销售环比均值", 0))
+    if consecutive_declines >= 3:
+        business += 8
+    elif consecutive_declines >= 2 and recent_mom_avg < 0:
+        business += 4
     if row["业态分类"] == "儿童配套":
         if row["退款申请数"] >= 6:
             business += 4
@@ -359,26 +364,16 @@ def score_row(row: pd.Series) -> tuple[int, str]:
     business = min(40, business)
 
     arrears = row["欠费总额(元)"]
-    if arrears >= 50_000:
-        financial += 22
-    elif arrears >= 10_000:
-        financial += 14
-    elif arrears > 0:
-        financial += 6
+    financial += threshold_score("arrears_amount", float(arrears))
     rent_ratio = row["租售比(%)"]
-    if rent_ratio > 35:
-        financial += 10
-    elif rent_ratio > 25:
-        financial += 7
-    elif rent_ratio >= 18:
+    financial += threshold_score("rent_to_sales_ratio", float(rent_ratio))
+    six_month_rent_ratio = float(row.get("近6月平均租售比", 0))
+    if six_month_rent_ratio >= 30 and rent_ratio >= 25:
         financial += 4
     financial = min(30, financial)
 
     utility = row["水电费波动(%)"]
-    if utility <= -40:
-        operation += 12
-    elif utility <= -20:
-        operation += 7
+    operation += threshold_score("utility_drop", float(utility))
     if row["近90天投诉数"] >= 8:
         operation += 6
     elif row["近90天投诉数"] >= 4:
@@ -412,7 +407,7 @@ def score_row(row: pd.Series) -> tuple[int, str]:
     return total, level
 
 
-def apply_demo_cases(df: pd.DataFrame) -> pd.DataFrame:
+def apply_seeded_risk_cases(df: pd.DataFrame) -> pd.DataFrame:
     cases = {
         "精品零售": {
             "经营场景": "转化恶化",
@@ -499,6 +494,118 @@ def apply_demo_cases(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def scenario_monthly_adjustment(scenario: str, month_index: int, rng: random.Random) -> dict[str, float]:
+    progress = month_index / max(1, len(HISTORY_MONTHS) - 1)
+    noise = rng.uniform(-0.025, 0.025)
+    if scenario == "健康":
+        return {"sales_factor": 1.0 + 0.06 * progress + noise, "arrears_factor": 0.0, "utility_factor": 1.0 + rng.uniform(-0.04, 0.05)}
+    if scenario == "短期波动":
+        return {"sales_factor": 1.0 - 0.06 * progress + noise, "arrears_factor": 0.1 * progress, "utility_factor": 1.0 + rng.uniform(-0.08, 0.04)}
+    if scenario == "转化恶化":
+        return {"sales_factor": 1.0 - 0.16 * progress + noise, "arrears_factor": 0.25 * progress, "utility_factor": 1.0 + rng.uniform(-0.08, 0.02)}
+    if scenario == "持续下滑":
+        return {"sales_factor": 1.0 - 0.28 * progress + noise, "arrears_factor": 0.45 * progress, "utility_factor": 1.0 - 0.12 * progress + rng.uniform(-0.06, 0.02)}
+    if scenario == "欠费承压":
+        return {"sales_factor": 0.98 - 0.18 * progress + noise, "arrears_factor": 0.75 * progress, "utility_factor": 0.98 - 0.08 * progress + rng.uniform(-0.06, 0.03)}
+    if scenario == "疑似撤店":
+        return {"sales_factor": 0.96 - 0.38 * progress + noise, "arrears_factor": 1.0 * progress, "utility_factor": 0.96 - 0.34 * progress + rng.uniform(-0.08, 0.02)}
+    if scenario == "区域性下滑":
+        return {"sales_factor": 1.0 - 0.20 * progress + noise, "arrears_factor": 0.2 * progress, "utility_factor": 1.0 - 0.10 * progress + rng.uniform(-0.05, 0.02)}
+    return {"sales_factor": 1.0 + noise, "arrears_factor": 0.0, "utility_factor": 1.0}
+
+
+def build_monthly_history(current_df: pd.DataFrame) -> pd.DataFrame:
+    rng = random.Random(SEED + 12)
+    rows = []
+    seasonality = {1: 0.92, 2: 0.88, 3: 0.98, 4: 1.02, 5: 1.05, 6: 1.00, 7: 0.96, 8: 0.98, 9: 1.02, 10: 1.08, 11: 1.12, 12: 1.18}
+    for _, row in current_df.iterrows():
+        base_sales = float(row["本月销售额"])
+        base_arrears = float(row["欠费总额(元)"])
+        base_complaints = float(row.get("近90天投诉数", 0))
+        scenario = str(row["经营场景"])
+        previous_sales: float | None = None
+        cumulative_arrears_days = 0
+        for month_index, period in enumerate(HISTORY_MONTHS):
+            adjustment = scenario_monthly_adjustment(scenario, month_index, rng)
+            sales = max(20_000, base_sales * adjustment["sales_factor"] * seasonality[int(period.month)])
+            if month_index == len(HISTORY_MONTHS) - 1:
+                sales = base_sales
+            sales_mom = 0.0 if previous_sales in (None, 0) else (sales / previous_sales - 1) * 100
+            previous_sales = sales
+
+            arrears_amount = int(max(0, base_arrears * adjustment["arrears_factor"] + rng.uniform(-2500, 2500)))
+            if month_index == len(HISTORY_MONTHS) - 1:
+                arrears_amount = int(base_arrears)
+            if arrears_amount > 0:
+                cumulative_arrears_days = min(120, cumulative_arrears_days + rng.randint(4, 10))
+            else:
+                cumulative_arrears_days = max(0, cumulative_arrears_days - rng.randint(8, 18))
+            if month_index == len(HISTORY_MONTHS) - 1:
+                cumulative_arrears_days = int(row.get("欠费天数", cumulative_arrears_days))
+
+            rent_to_sales = float(row["租售比(%)"]) * (base_sales / max(sales, 1))
+            utility_change = (adjustment["utility_factor"] - 1) * 100 + rng.uniform(-3, 3)
+            if month_index == len(HISTORY_MONTHS) - 1:
+                utility_change = float(row["水电费波动(%)"])
+            complaints = max(0, int(round(base_complaints * (0.45 + 0.55 * month_index / max(1, len(HISTORY_MONTHS) - 1)) + rng.uniform(-1, 1))))
+            if month_index == len(HISTORY_MONTHS) - 1:
+                complaints = int(row.get("近90天投诉数", complaints))
+
+            rows.append(
+                {
+                    "月份": str(period),
+                    "门店ID": row["门店ID"],
+                    "门店名称": row["门店名称"],
+                    "业态分类": row["业态分类"],
+                    "楼层": row["楼层"],
+                    "经营场景": row["经营场景"],
+                    "租赁面积(sqm)": row["租赁面积(sqm)"],
+                    "月销售额": int(sales),
+                    "销售环比(%)": round(sales_mom, 1),
+                    "租售比(%)": round(rent_to_sales, 1),
+                    "欠费总额(元)": arrears_amount,
+                    "欠费天数": cumulative_arrears_days,
+                    "水电费波动(%)": round(utility_change, 1),
+                    "近90天投诉数": complaints,
+                    "进店率(%)": round(max(1.0, float(row["进店率(%)"]) * (0.9 + 0.2 * sales / max(base_sales, 1))), 1),
+                    "成交转化率(%)": round(max(2.0, float(row["成交转化率(%)"]) * (0.92 + 0.15 * sales / max(base_sales, 1))), 1),
+                    "保证金覆盖率(%)": round(max(10, float(row["保证金覆盖率(%)"]) - arrears_amount / 2000), 1),
+                }
+            )
+    history = pd.DataFrame(rows)
+    history["销售同比(%)"] = 0.0
+    return history
+
+
+def add_history_features(current_df: pd.DataFrame, history_df: pd.DataFrame) -> pd.DataFrame:
+    result = current_df.copy()
+    tail = history_df.sort_values(["门店ID", "月份"]).groupby("门店ID").tail(6)
+    features = (
+        tail.groupby("门店ID")
+        .agg(
+            近3月平均销售=("月销售额", lambda series: round(series.tail(3).mean(), 1)),
+            近6月平均销售=("月销售额", lambda series: round(series.tail(6).mean(), 1)),
+            近3月销售环比均值=("销售环比(%)", lambda series: round(series.tail(3).mean(), 1)),
+            近6月最高欠费=("欠费总额(元)", "max"),
+            近6月平均租售比=("租售比(%)", lambda series: round(series.tail(6).mean(), 1)),
+        )
+        .reset_index()
+    )
+    declining = (
+        history_df.sort_values(["门店ID", "月份"])
+        .groupby("门店ID")
+        .tail(3)
+        .assign(是否下滑=lambda frame: frame["销售环比(%)"] < 0)
+        .groupby("门店ID")["是否下滑"]
+        .sum()
+        .rename("连续下滑月数")
+        .reset_index()
+    )
+    result = result.merge(features, on="门店ID", how="left").merge(declining, on="门店ID", how="left")
+    result["连续下滑月数"] = result["连续下滑月数"].fillna(0).astype(int)
+    return result
+
+
 def main() -> None:
     rng = random.Random(SEED)
     stores = build_store_base()
@@ -510,7 +617,9 @@ def main() -> None:
 
     df = pd.DataFrame(generated)
     df = df.drop(columns=["基准销售额"])
-    df = apply_demo_cases(df)
+    df = apply_seeded_risk_cases(df)
+    history_df = build_monthly_history(df)
+    df = add_history_features(df, history_df)
     df["风险得分"], df["风险等级"] = zip(*df.apply(score_row, axis=1))
 
     column_order = [
@@ -528,6 +637,12 @@ def main() -> None:
         "欠费总额(元)",
         "欠费天数",
         "保证金覆盖率(%)",
+        "近3月平均销售",
+        "近6月平均销售",
+        "近3月销售环比均值",
+        "近6月最高欠费",
+        "近6月平均租售比",
+        "连续下滑月数",
         "水电费波动(%)",
         "近90天投诉数",
         "退款申请数",
@@ -538,11 +653,24 @@ def main() -> None:
         "风险等级",
     ]
     df = df[column_order]
-    numeric_round = ["销售环比(%)", "进店率(%)", "成交转化率(%)", "租售比(%)", "保证金覆盖率(%)", "水电费波动(%)"]
+    numeric_round = [
+        "销售环比(%)",
+        "进店率(%)",
+        "成交转化率(%)",
+        "租售比(%)",
+        "保证金覆盖率(%)",
+        "近3月平均销售",
+        "近6月平均销售",
+        "近3月销售环比均值",
+        "近6月平均租售比",
+        "水电费波动(%)",
+    ]
     df[numeric_round] = df[numeric_round].round(1)
     OUTPUT_CSV.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(OUTPUT_CSV, index=False, encoding="utf-8-sig")
+    history_df.to_csv(OUTPUT_HISTORY_CSV, index=False, encoding="utf-8-sig")
     print(f"Generated {len(df)} rows -> {OUTPUT_CSV}")
+    print(f"Generated {len(history_df)} monthly rows -> {OUTPUT_HISTORY_CSV}")
 
 
 if __name__ == "__main__":

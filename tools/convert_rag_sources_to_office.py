@@ -103,7 +103,7 @@ def create_docx(source: Path, target: Path) -> None:
     for line in source.read_text(encoding="utf-8").splitlines():
         add_docx_paragraph(document, line)
 
-    document.core_properties.author = "Mall Risk Agent Demo"
+    document.core_properties.author = "Mall Risk Agent"
     document.core_properties.title = source.stem.replace("_", " ")
     document.save(target)
 

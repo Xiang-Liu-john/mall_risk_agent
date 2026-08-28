@@ -1,0 +1,11 @@
+{
+  "dense_weight": 0.62,
+  "lexical_weight": 0.38,
+  "rerank_top_n": 20,
+  "final_top_k": 8,
+  "dense_top_k": 40,
+  "lexical_top_k": 40,
+  "qdrant_collection": "mall_risk_chunks",
+  "embedding_provider": "ark_openai_compatible",
+  "reranker_provider": "disabled"
+}

@@ -1,0 +1,51 @@
+{
+  "dataset_size": 45,
+  "semantic_ready": false,
+  "retrieval_configs": [
+    {
+      "name": "hashing_fts",
+      "status": "evaluated",
+      "config": {
+        "dense_weight": 0.0,
+        "lexical_weight": 1.0,
+        "rerank_top_n": 20,
+        "final_top_k": 8,
+        "dense_top_k": 40,
+        "lexical_top_k": 40,
+        "qdrant_collection": "mall_risk_chunks",
+        "reranker_provider": "disabled",
+        "embedding_provider": "hashing_fallback"
+      },
+      "hit@3": 0.4444444444444444,
+      "recall@3": 0.26851851851851855,
+      "mrr": 0.4222222222222222,
+      "hit@5": 0.4444444444444444,
+      "recall@5": 0.26851851851851855,
+      "hit@8": 0.4444444444444444,
+      "recall@8": 0.26851851851851855
+    },
+    {
+      "name": "semantic_dense",
+      "status": "skipped",
+      "reason": "Semantic embedding was not validated; semantic dense and semantic hybrid were not evaluated."
+    },
+    {
+      "name": "semantic_hybrid",
+      "status": "skipped",
+      "reason": "Semantic embedding was not validated; semantic dense and semantic hybrid were not evaluated."
+    }
+  ],
+  "parameter_candidates": [],
+  "selected_config": {
+    "dense_weight": 0.62,
+    "lexical_weight": 0.38,
+    "rerank_top_n": 20,
+    "final_top_k": 8,
+    "dense_top_k": 40,
+    "lexical_top_k": 40,
+    "qdrant_collection": "mall_risk_chunks",
+    "reranker_provider": "disabled",
+    "embedding_provider": "ark_openai_compatible"
+  },
+  "selection_basis": "Semantic parameter comparison was skipped because semantic embedding was not validated."
+}

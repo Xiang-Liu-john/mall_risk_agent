@@ -1,6 +1,42 @@
-.venv/
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local secrets and environment overrides
+.env
+.env.*
+!.env.example
 .streamlit/secrets.toml
+*.pem
+*.key
+
+# Runtime databases, vector stores, and generated outputs
 rag_db/
+backend_db/
 tmp/
+logs/
+*.log
+*.sqlite
+*.sqlite3
+*.db
+evaluation/latest_results.json
+
+# Local editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local Git repair backups
+.git_broken_backup_*/

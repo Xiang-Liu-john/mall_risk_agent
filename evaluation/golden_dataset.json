@@ -1,0 +1,372 @@
+[
+  {
+    "question": "分析欠费风险最高的门店",
+    "expected_intent": "arrears",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "门店历史月度数据", "制度与模板", "合同与条款资料"]
+  },
+  {
+    "question": "找出销售持续下滑的门店",
+    "expected_intent": "sales_decline",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "门店历史月度数据"]
+  },
+  {
+    "question": "租售比异常偏高的商户有哪些",
+    "expected_intent": "rent_ratio",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "门店历史月度数据", "合同与条款资料"]
+  },
+  {
+    "question": "投诉风险最高的门店有哪些",
+    "expected_intent": "complaints",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "巡检与运营记录"]
+  },
+  {
+    "question": "保证金覆盖不足的风险门店",
+    "expected_intent": "deposit_cover",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "合同与条款资料"]
+  },
+  {
+    "question": "欠费账龄最长的商户有哪些",
+    "expected_intent": "arrears_days",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "合同与条款资料"]
+  },
+  {
+    "question": "综合最高风险门店排名",
+    "expected_intent": "top_risk",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "制度与模板"]
+  },
+  {
+    "question": "查询森屿女装的风险诊断",
+    "expected_intent": "top_risk",
+    "expected_filters": {"门店名称": "森屿女装"},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": ["SHOP_001"],
+    "expected_evidence_sources": ["门店经营数据"]
+  },
+  {
+    "question": "分析 F3 楼层的经营风险",
+    "expected_intent": "top_risk",
+    "expected_filters": {"楼层": "F3"},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据"]
+  },
+  {
+    "question": "餐饮业态中最需要关注的门店",
+    "expected_intent": "top_risk",
+    "expected_filters": {"业态分类": "餐饮"},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "制度与模板"]
+  },
+  {
+    "question": "分析 F3 餐饮业态的欠费风险",
+    "expected_intent": "arrears",
+    "expected_filters": {"楼层": "F3", "业态分类": "餐饮"},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "门店历史月度数据", "合同与条款资料"]
+  },
+  {
+    "question": "餐饮商户里销售持续下降的有哪些",
+    "expected_intent": "sales_decline",
+    "expected_filters": {"业态分类": "餐饮"},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "门店历史月度数据"]
+  },
+  {
+    "question": "高租售比但没有欠费的商户需要关注吗",
+    "expected_intent": "arrears",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "门店历史月度数据", "合同与条款资料"],
+    "behavior_constraints": ["区分租金压力与欠费事实"]
+  },
+  {
+    "question": "欠费并且保证金覆盖不足的门店有哪些",
+    "expected_intent": "arrears",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "合同与条款资料"]
+  },
+  {
+    "question": "F4 楼层高风险门店排个序",
+    "expected_intent": "top_risk",
+    "expected_filters": {"楼层": "F4"},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据"]
+  },
+  {
+    "question": "儿童配套业态里投诉异常的商户",
+    "expected_intent": "complaints",
+    "expected_filters": {"业态分类": "儿童配套"},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "巡检与运营记录"]
+  },
+  {
+    "question": "销售下降但没有欠费的商户有哪些风险原因",
+    "expected_intent": "arrears",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "门店历史月度数据"],
+    "behavior_constraints": ["不得把无欠费商户描述为已欠费"]
+  },
+  {
+    "question": "欠费但经营指标正常的店要怎么判断",
+    "expected_intent": "arrears",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "合同与条款资料"],
+    "behavior_constraints": ["区分履约风险和经营风险"]
+  },
+  {
+    "question": "保证金充足但租售比异常的门店",
+    "expected_intent": "rent_ratio",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "合同与条款资料"]
+  },
+  {
+    "question": "B1 主力店欠费风险是否存在",
+    "expected_intent": "arrears",
+    "expected_filters": {"楼层": "B1", "业态分类": "主力店"},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "合同与条款资料"]
+  },
+  {
+    "question": "查询不存在门店星河幻影铺的风险",
+    "expected_intent": "top_risk",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据"],
+    "behavior_constraints": ["明确说明未匹配到指定门店"]
+  },
+  {
+    "question": "帮我看看这批店",
+    "expected_intent": "top_risk",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据"],
+    "behavior_constraints": ["说明问题信息不足并给出默认综合风险口径"]
+  },
+  {
+    "question": "只分析欠费形成的原因，不要给行动建议",
+    "expected_intent": "arrears",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "合同与条款资料"],
+    "behavior_constraints": ["只分析原因", "不输出行动建议"]
+  },
+  {
+    "question": "列出欠费风险证据，但不执行催缴",
+    "expected_intent": "arrears",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "合同与条款资料"],
+    "behavior_constraints": ["不执行催缴", "敏感动作需人工审批"]
+  },
+  {
+    "question": "不要生成法务行动，只说明合同风险依据",
+    "expected_intent": "top_risk",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["合同与条款资料", "制度与模板"],
+    "behavior_constraints": ["不生成法务行动", "需要列出证据"]
+  },
+  {
+    "question": "需要列出每个判断对应的证据来源",
+    "expected_intent": "top_risk",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "制度与模板", "合同与条款资料"],
+    "behavior_constraints": ["需要列出证据"]
+  },
+  {
+    "question": "只返回最高风险前三家门店",
+    "expected_intent": "top_risk",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据"],
+    "behavior_constraints": ["只返回前三家"]
+  },
+  {
+    "question": "最近哪些店感觉经营得不太正常",
+    "expected_intent": "top_risk",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "巡检与运营记录"]
+  },
+  {
+    "question": "哪几家店最近可能需要重点盯一下",
+    "expected_intent": "top_risk",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "门店历史月度数据"]
+  },
+  {
+    "question": "哪些商户现金流压力可能比较大",
+    "expected_intent": "top_risk",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "门店历史月度数据", "合同与条款资料"]
+  },
+  {
+    "question": "精品零售在 F2 的欠费门店",
+    "expected_intent": "arrears",
+    "expected_filters": {"业态分类": "精品零售", "楼层": "F2"},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "合同与条款资料"]
+  },
+  {
+    "question": "生活服务业态销售下滑最严重的是谁",
+    "expected_intent": "sales_decline",
+    "expected_filters": {"业态分类": "生活服务"},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "门店历史月度数据"]
+  },
+  {
+    "question": "潮流运动门店租售比压力排序",
+    "expected_intent": "rent_ratio",
+    "expected_filters": {"业态分类": "潮流运动"},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "门店历史月度数据"]
+  },
+  {
+    "question": "F5 楼层投诉最多的商户",
+    "expected_intent": "complaints",
+    "expected_filters": {"楼层": "F5"},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "巡检与运营记录"]
+  },
+  {
+    "question": "F1 楼层保证金覆盖率最低的门店",
+    "expected_intent": "deposit_cover",
+    "expected_filters": {"楼层": "F1"},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "合同与条款资料"]
+  },
+  {
+    "question": "森屿女装欠费风险和销售下滑是否叠加",
+    "expected_intent": "arrears",
+    "expected_filters": {"门店名称": "森屿女装"},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": ["SHOP_001"],
+    "expected_evidence_sources": ["门店经营数据", "门店历史月度数据", "合同与条款资料"]
+  },
+  {
+    "question": "MONO集物的欠费账龄和保证金是否危险",
+    "expected_intent": "arrears",
+    "expected_filters": {"门店名称": "MONO集物"},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": ["SHOP_002"],
+    "expected_evidence_sources": ["门店经营数据", "合同与条款资料"]
+  },
+  {
+    "question": "梵木生活目前是不是低风险",
+    "expected_intent": "lowest_risk",
+    "expected_filters": {"门店名称": "梵木生活"},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": ["SHOP_003"],
+    "expected_evidence_sources": ["门店经营数据"]
+  },
+  {
+    "question": "销售额最高的门店有哪些",
+    "expected_intent": "sales_amount_high",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据"]
+  },
+  {
+    "question": "销售额最低的商户有哪些",
+    "expected_intent": "sales_amount_low",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据"]
+  },
+  {
+    "question": "哪些门店销售上涨表现最好",
+    "expected_intent": "sales_growth",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "门店历史月度数据"]
+  },
+  {
+    "question": "进店率最低的门店有哪些",
+    "expected_intent": "entry_rate",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "巡检与运营记录"]
+  },
+  {
+    "question": "成交转化率最低的商户",
+    "expected_intent": "conversion_rate",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据"]
+  },
+  {
+    "question": "水电费异常下降可能撤店的门店",
+    "expected_intent": "operation_anomaly",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "巡检与运营记录"]
+  },
+  {
+    "question": "生成管理层摘要",
+    "expected_intent": "executive_summary",
+    "expected_filters": {},
+    "expected_tool": ["query_structured_risk_data", "search_rag_evidence"],
+    "expected_store_ids": [],
+    "expected_evidence_sources": ["门店经营数据", "制度与模板"]
+  }
+]
